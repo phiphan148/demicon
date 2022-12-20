@@ -4,14 +4,12 @@ package com.demicon.user;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
 @Entity
-@Table(name = "USERS")
+@Table(name = "user")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -21,14 +19,13 @@ public class User implements Serializable {
 
     @NotNull
     @Id
-    private Long id;
-
-    private String name;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
 
     private String gender;
 
-    private String country;
-
     private String email;
+
+    private String location;
 
 }
