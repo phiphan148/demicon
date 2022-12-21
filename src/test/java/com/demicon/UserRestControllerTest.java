@@ -30,7 +30,7 @@ public class UserRestControllerTest {
         List<User> result = underTest.importUsers();
 
         assertThat(result).isInstanceOf(ArrayList.class);
-        assertThat(result.size()).isEqualTo(1);
+        assertThat(result.size()).isEqualTo(20);
     }
 
     @Test
