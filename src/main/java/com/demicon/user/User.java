@@ -5,27 +5,28 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
 @Entity
-@Table(name = "user")
+@Table(name = "DEMICON_USER")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@ToString(callSuper = true)
 @SuperBuilder(toBuilder = true)
 public class User implements Serializable {
 
-    @NotNull
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     private String gender;
 
+    @Embedded
+    private Login login;
+
     private String email;
 
-    private String location;
+    @Embedded
+    private Location location;
 
 }

@@ -5,5 +5,4 @@
                    logicalFilePath="db/master.xml">
 
     <include relativeToChangelogFile="true" file="changelog-1.0.xml" context="schema"/>
-    <include file="changelog-initial-data.xml" relativeToChangelogFile="true" context="test-data"/>
 </databaseChangeLog>

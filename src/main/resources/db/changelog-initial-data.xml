@@ -5,7 +5,7 @@
                    logicalFilePath="db/master.xml">
     <changeSet id="load-001" author="PhiPhan" >
         <loadData relativeToChangelogFile="true" separator=";"
-                  tableName="user" file="./test-data/user.csv"/>
+                  tableName="DEMICON_USER" file="./test-data/user.csv"/>
     </changeSet>
 
 </databaseChangeLog>

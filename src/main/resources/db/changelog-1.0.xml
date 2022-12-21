@@ -5,15 +5,17 @@
                    logicalFilePath="db/changelog-1.0.xml">
 
     <changeSet author="PhiPhan" id="001">
-        <createTable tableName="user">
+        <createTable tableName="DEMICON_USER">
             <column name="id" type="integer" autoIncrement="true" incrementBy="1">
                 <constraints primaryKey="true" primaryKeyName="user_id_pkey"/>
             </column>
-            <column name="gender" type="varchar(22)" defaultValue="female">
+            <column name="name" type="varchar(200)">
             </column>
-            <column name="email" type="varchar(100)" defaultValue="female">
+            <column name="gender" type="varchar(22)">
             </column>
-            <column name="location" type="varchar(500)" defaultValue="female">
+            <column name="email" type="varchar(200)">
+            </column>
+            <column name="country" type="varchar(200)">
             </column>
         </createTable>
     </changeSet>

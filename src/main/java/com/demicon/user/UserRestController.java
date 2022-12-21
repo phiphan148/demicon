@@ -1,29 +1,21 @@
 package com.demicon.user;
 
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import lombok.val;
-import org.springframework.beans.BeanUtils;
-import org.springframework.context.annotation.Bean;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.*;
-import org.springframework.http.converter.HttpMessageConverter;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.time.ZoneOffset;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 @AllArgsConstructor
@@ -31,45 +23,74 @@ import java.util.*;
 @RequestMapping("/users")
 public class UserRestController {
 
-    private static final ParameterizedTypeReference<List<User>> RESPONSE_TYPE = new ParameterizedTypeReference<>() {};
-
     private final UserService userService;
+    private final UserMapper userMapper;
 
     @GetMapping("/import-users")
-    public List<User> importUsers() throws JsonProcessingException {
-        String uri = "https://randomuser.me/api?inc=gender,name,location,email";
+    public List<User> importUsers() {
+        String uri = "https://randomuser.me/api?inc=gender,location,email,login";
+
         RestTemplate restTemplate = new RestTemplate();
 
-        String result = restTemplate.getForObject(uri, String.class);
+        try {
+            restTemplate.getForObject(uri, String.class);
 
-        ObjectMapper mapper = new ObjectMapper();
+            String result = restTemplate.getForObject(uri, String.class);
 
-        mapper.enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
+            mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
 
-        TypeReference<HashMap<String, List<User>>> typeReference = new TypeReference<>(){};
+            TypeReference<HashMap<String, List<User>>> typeReference = new TypeReference<>(){};
 
-        HashMap<String, List<User>> results= mapper.readValue(result, typeReference);
+            HashMap<String, List<User>> results= mapper.readValue(result, typeReference);
+            List<User> users = results.get("results");
 
-        List<User> users = results.get("results");
+            userService.processUser(users);
 
-        val user = User.builder().id(123).build();
-
-        userService.processUser(user);
-
-      /*  System.out.println("User New" + user);
-
-        users.stream().forEach(el -> BeanUtils.copyProperties(el, user));
-
-        users.stream().forEach(userService::processUser);*/
-
-        System.out.println("Users" + users);
-
-        return users;
+            if (users != null) {
+                return users;
+            } else {
+                return userService.findLastSaved();
+            }
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @GetMapping("/getUsers")
-    public List<User> getUsers() {
-        return  userService.findAll();
+    public Map<String, Object> getUsers() {
+        List<User> users = userService.findAll();
+        List<UserDto> userDtos = users.stream().map(userMapper::toDto).collect(Collectors.toList());
+
+        Map<String, List<UserDto>> userGroupByCountry = userDtos.stream()
+                        .collect(Collectors.groupingBy(UserDto::getCountry, Collectors.toList()));
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("countries", getUserMapByCountryList(userGroupByCountry));
+
+        return result;
+    }
+
+    @GetMapping("/getAllUsers")
+    public List<User> getAllUsers() {
+        return userService.findAll();
+    }
+
+    @GetMapping("/getAllUsersByCountry")
+    public List<User> getAllUsersByCountry(@RequestParam String country) {
+        return userService.findAllByCountry(country);
+    }
+
+    private List<Map<String, Object>> getUserMapByCountryList(Map<String, List<UserDto>> userGroupByCountry) {
+        List<Map<String, Object>> userMapByCountryList = new ArrayList<>();
+        for(Map.Entry<String, List<UserDto>> entry : userGroupByCountry.entrySet()) {
+            Map<String, Object> userMapByCountry = new HashMap<>();
+            userMapByCountry.put("name", entry.getKey());
+            userMapByCountry.put("users", entry.getValue());
+            userMapByCountryList.add(userMapByCountry);
+        }
+        return userMapByCountryList;
     }
 
 }

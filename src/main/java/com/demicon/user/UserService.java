@@ -13,13 +13,21 @@ public class UserService {
 
      private UserRepository userRepository;
 
-    public void processUser(User user) {
-        userRepository.save(user);
+    @Transactional
+    public void processUser(List<User> users) {
+        userRepository.saveAll(users);
     }
 
-    @Transactional
     public List<User> findAll() {
         return userRepository.findAll();
+    }
+
+    public List<User> findLastSaved() {
+        return userRepository.findTopByOrderByIdDesc();
+    }
+
+    public List<User> findAllByCountry(String country) {
+        return userRepository.findByLocationCountryIgnoreCase(country);
     }
 
 }
