@@ -4,14 +4,9 @@ package com.demicon.user;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
@@ -28,7 +23,7 @@ public class UserRestController {
 
     @GetMapping("/import-users")
     public List<User> importUsers() {
-        String uri = "https://randomuser.me/api?inc=gender,location,email,login";
+        String uri = "https://randomuser.me/api?inc=gender,location,email,login&results=20";
 
         RestTemplate restTemplate = new RestTemplate();
 
@@ -70,16 +65,6 @@ public class UserRestController {
         result.put("countries", getUserMapByCountryList(userGroupByCountry));
 
         return result;
-    }
-
-    @GetMapping("/getAllUsers")
-    public List<User> getAllUsers() {
-        return userService.findAll();
-    }
-
-    @GetMapping("/getAllUsersByCountry")
-    public List<User> getAllUsersByCountry(@RequestParam String country) {
-        return userService.findAllByCountry(country);
     }
 
     private List<Map<String, Object>> getUserMapByCountryList(Map<String, List<UserDto>> userGroupByCountry) {
