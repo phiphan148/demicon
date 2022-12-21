@@ -26,8 +26,4 @@ public class UserService {
         return userRepository.findTopByOrderByIdDesc();
     }
 
-    public List<User> findAllByCountry(String country) {
-        return userRepository.findByLocationCountryIgnoreCase(country);
-    }
-
 }
